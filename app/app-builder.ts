@@ -2,32 +2,18 @@ import * as path from "path";
 import * as createError from "http-errors"
 import express, {Express} from "express";
 import bodyParser from "body-parser";
+import {injectable} from "inversify";
+import {AppContainer} from "./app-container";
 
 export class AppBuilder {
+    private _app: Express;
 
-    private readonly _app = express();
-    private static instance: AppBuilder;
-
-    private constructor() {
-
-        this._app = express();
-        console.log( 'app-builder construct')
-    }
-
-    public static getInstance(): AppBuilder {
-        if (!AppBuilder.instance) {
-            AppBuilder.instance = new AppBuilder();
-        }
-
-        console.log( 'app-builder')
-        return AppBuilder.instance;
-    }
-
-    get app(): Express {
-        return this._app;
+    constructor(app: Express) {
+        this._app = app;
     }
 
     public build(): Express {
+        console.log("builder")
         this.configureMiddleware();
         this._app.set('views', path.join(__dirname, 'views'));
         this._app.set('view engine', 'pug');
