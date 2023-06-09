@@ -68,7 +68,7 @@ export class Server {
                 process.exit(1);
                 break;
             default:
-                throw error;
+                console.error("Something Went wrong");
         }
     }
 
