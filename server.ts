@@ -2,8 +2,7 @@ import express, {Express} from 'express';
 import dotenv from 'dotenv';
 import http from 'http';
 import ErrnoException = NodeJS.ErrnoException;
-import {debug} from "util";
-//Initialize Environment Variables from .env
+
 dotenv.config();
 
 const port = normalizePort({val: process.env.PORT || '3000'});
@@ -86,6 +85,6 @@ export class Server {
             bind = `port ${address.port}`;
         }
 
-        debug('Listening on ' + bind);
+        console.log('Listening on ' + bind);
     }
 }

@@ -1,5 +1,5 @@
 import {classToClassFromExist} from "class-transformer";
-import {validateSync} from "class-validator";
+import {validate, validateSync} from "class-validator";
 import {Request, Response} from "express";
 import {HttpStatusCode} from "axios";
 
@@ -10,8 +10,8 @@ export function Handle<T>(dtoClass: new (arg: any) => T) {
         descriptor.value = async function (request: Request, response: Response) {
             var customRequest = new dtoClass(request)
             var requestPayload = await request.body;
-            const dto = classToClassFromExist(requestPayload, customRequest); // Specify type as object
-            const errors = validateSync(dto as object);
+            const dto = classToClassFromExist(requestPayload, customRequest);
+            const errors = await validate(dto);
 
             if (errors.length > 0) {
                 const errorMessages = errors.map(error => Object.values(error.constraints!)).flat();

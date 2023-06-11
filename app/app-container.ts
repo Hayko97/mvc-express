@@ -1,35 +1,35 @@
 import {Container, interfaces} from "inversify";
 import {HomeController} from "./http/Controllers/HomeController";
-import express, {Express} from "express";
-import {Auth} from "./http/Middleware/Auth";
-import {Cors} from "./http/Middleware/Cors";
-import {Middleware} from "./http/Middleware/Middleware";
-import {getApp} from "./app";
+import express, {Express, NextFunction, Request, Response} from "express";
+import {Controller} from "./http/Controllers/Controller";
+import {CarController} from "./http/Controllers/CarController";
+import {ILogger} from "./utils/Logging/ILogger";
+import {Logger} from "./utils/Logging/Logger";
+
 
 export class AppContainer {
 
-    private readonly _container;
+    private readonly _container: Container;
     private static instance: AppContainer;
 
     private constructor() {
         this._container = new Container();
     }
 
-    get app(): Express {
-        return getApp();
+    controllers: Controller[] = [
+        HomeController,
+        CarController,
+    ]
+
+    public setupBindings() {
+        this._container.bind<ILogger>("ILogger").to(Logger).inTransientScope()
     }
 
-    public static getInstance(): AppContainer {
+    public static async create(): Promise<AppContainer> {
         if (!AppContainer.instance) {
             AppContainer.instance = new AppContainer();
         }
 
         return AppContainer.instance;
-    }
-
-    public bindControllers() {
-        this._container.bind(HomeController).to(HomeController).inTransientScope();
-
-        return this;
     }
 }

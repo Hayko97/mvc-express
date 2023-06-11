@@ -1,6 +1,5 @@
 import {ArrayMinSize, ArrayNotEmpty, IsString, Length} from "class-validator";
 import {Request} from "./Request";
-import {Request as ExpressRequest} from "express";
 
 export class CreateHomeRequest extends Request {
 

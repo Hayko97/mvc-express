@@ -1,76 +1,99 @@
-import express, {Express, NextFunction, Request, RequestHandler, Response, Router} from "express";
-import {AppBuilder} from "./app-builder";
-import {HttpStatusCode} from "axios/index";
-import {AppException} from "./exceptions/AppException";
+import express, {Application, Express, NextFunction, Request, Response} from "express";
+import bodyParser from "body-parser";
+import path from "path";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import createHttpError, {HttpError} from "http-errors";
+import {HttpStatusCode} from "axios";
+import morgan from "morgan";
 
-var _app: Express = express();
+let expressApp: Express;
+let builder: Builder;
 
-export function getApp() {
-    return _app
+function app(target: any) {
+    expressApp = express();
 }
 
-new AppBuilder(_app).build();
-
-//Route decorators
-/*
-Issue related division by classes,
-decorator functions calls first, while the app-container doesn't initialized and middlewares doesn't setups
-*/
-export function Get(path: string) {
-    return function (target: any, key: string, descriptor: PropertyDescriptor) {
-        _app.get(path, descriptor.value);
-    };
+function build(target: any) {
+    builder = new Builder(expressApp);
+    builder.build();
 }
 
-export function Post(path: string) {
-    return function (target: any, key: string, descriptor: PropertyDescriptor) {
-        _app.post(path, descriptor.value);
-    };
-}
+@app
+export class App {
 
-export function Put(path: string) {
-    return function (target: any, key: string, descriptor: PropertyDescriptor) {
-        _app.put(path, descriptor.value);
-    };
-}
+    private static instance: App;
 
-export function Delete(path: string) {
-    return function (target: any, key: string, descriptor: PropertyDescriptor) {
-        _app.delete(path, descriptor.value);
-    };
-}
+    public getApp(): Express {
+        return expressApp;
+    }
 
-export function Patch(path: string) {
-    console.log("decorator");
-    return function (target: any, key: string, descriptor: PropertyDescriptor) {
-        _app.patch(path, descriptor.value);
-    };
-}
-
-export function logRequestHierarchy(app: Express, router: Router, prefix = '') {
-
-    (app._router.stack as any[]).forEach((layer) => {
-        if (layer.route) {
-            const path = prefix + (layer.route?.path ?? '');
-            const methods = Object.keys(layer.route?.methods ?? {}).join(', ');
-            console.log(`Path: ${path}`);
-            console.log(`Methods: ${methods}`);
-            console.log('--- Middleware Stack ---');
-            layer.route.stack.forEach((handler: RequestHandler) => {
-                console.log(handler);
-            });
-            console.log('--- End of Middleware Stack ---');
-        } else if (layer.name === 'router') {
-            const router = layer.handle as Router;
-            const routerPath = prefix + layer.path;
-            console.log(`Router Path: ${routerPath}`);
-            console.log('--- Router Stack ---');
-            logRequestHierarchy(app, router, routerPath);
-            console.log('--- End of Router Stack ---');
-        } else if (layer.name === 'bound dispatch') {
-            console.log('--- Middleware Stack ---');
-            console.log(layer.handle);
-            console.log('--- End of Middleware Stack ---');
+    public static getInstance(): App {
+        if (!App.instance) {
+            App.instance = new App();
         }
-    });
+
+        return App.instance;
+    }
+
+    get builder(): Builder {
+        return builder;
+    }
+}
+
+@build
+class Builder {
+    private readonly _app: Express;
+
+    constructor(app: Express) {
+        this._app = app;
+    }
+
+    public build() {
+        this.logging()
+        this.parsers();
+        this.viewEngine();
+        this.cors()
+        this._app.use(cookieParser());
+        this._app.use(express.static(path.join('../../', __dirname, 'public')));
+
+        return this._app;
+    }
+
+    public parsers() {
+        this._app.use(bodyParser.json());
+        this._app.use(bodyParser.urlencoded({extended: true}));
+    }
+
+    public viewEngine() {
+        this._app.set('views', path.join(__dirname, '../../app/views'));
+        this._app.set('view engine', 'pug');
+    }
+
+    public cors() {
+        this._app.use(cors());
+    }
+
+    public logging() {
+        this._app.use(morgan('tiny'));
+    }
+
+    public errorHandlers() {
+        this._app.use(function (req: Request, res: Response, next: NextFunction) {
+            next(createHttpError(HttpStatusCode.NotFound));
+        });
+
+        this._app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
+            res.locals.message = err.message;
+            res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+            if (err instanceof HttpError) {
+                res.status(err.status);
+                res.render('error');
+            } else {
+                res.status(HttpStatusCode.InternalServerError);
+                res.send('Server Error');
+            }
+        });
+    }
 }
