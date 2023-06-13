@@ -10,15 +10,6 @@ import morgan from "morgan";
 let expressApp: Express;
 let builder: Builder;
 
-function app(target: any) {
-    expressApp = express();
-}
-
-function build(target: any) {
-    builder = new Builder(expressApp);
-    builder.build();
-}
-
 @app
 export class App {
 
@@ -92,8 +83,17 @@ class Builder {
                 res.render('error');
             } else {
                 res.status(HttpStatusCode.InternalServerError);
-                res.send('Server Error');
+                res.json(`Server Error - ${err.stack}`);
             }
         });
     }
+}
+
+function app(target: any) {
+    expressApp = express();
+}
+
+function build(target: any) {
+    builder = new Builder(expressApp);
+    builder.build();
 }

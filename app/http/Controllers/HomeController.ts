@@ -1,22 +1,27 @@
-import {NextFunction, Request, Response} from "express";
+import {NextFunction, Request, Response as ExpressResponse} from "express";
+import {CustomResponse} from "../Responses/CustomResponse";
 import {injectable} from "inversify";
 
 import {CreateHomeRequest} from "../Requests/CreateHomeRequest";
 import {Handle} from "../Requests/Decorators/Handle";
 import {Controller} from "./Controller";
-import {HttpStatusCode} from "axios";
 import {Get, Post} from "../../router";
 
 export class HomeController extends Controller {
 
-    @Get("/")
-    public index(request: Request, response: Response) {
-        response.send('respond with a resource');
+    constructor() {
+        super();
     }
 
-    @Post("/")
-    @Handle(CreateHomeRequest)
-    public create(request: CreateHomeRequest, response: Response) {
-        response.status(HttpStatusCode.Ok).json('sdfgddsfg');
+    @Get("/")
+    public index(request: Request): CustomResponse {
+
+        return this.response("helo");
+    }
+
+    @Post("/create/:id", CreateHomeRequest)
+    public create(id: number, request: CreateHomeRequest): CustomResponse {
+
+        return CustomResponse.response(request.name, id);
     }
 }

@@ -17,8 +17,8 @@ export class AppContainer {
     }
 
     controllers: Controller[] = [
-        HomeController,
-        CarController,
+        new HomeController(),
+        new CarController(),
     ]
 
     public setupBindings() {
