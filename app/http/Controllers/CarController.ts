@@ -1,14 +1,14 @@
 import {NextFunction, Request, Response} from "express";
 import {injectable} from "inversify";
 import {CreateHomeRequest} from "../Requests/CreateHomeRequest";
-import {Controller} from "./Controller";
+import {BaseController} from "./BaseController";
 import {HttpStatusCode} from "axios";
-import {Delete, Get, Post, Put} from "../../router";
+import {Delete, Get, Post, Put} from "../Decorators/routes";
 import {CreateCarRequest} from "../Requests/CreateCarRequest";
 import {UpdateCarRequest} from "../Requests/UpdateCarRequest";
 import {CustomResponse} from "../Responses/CustomResponse";
 
-export class CarController extends Controller {
+export class CarController extends BaseController {
 
     @Get("/car/:id")
     public index(id: string, request: Request): CustomResponse {

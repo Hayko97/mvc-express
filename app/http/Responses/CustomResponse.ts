@@ -1,6 +1,6 @@
 import {HttpStatusCode} from "axios";
 import {response, Response as ExpressResponse} from "express";
-import {plainToClass, plainToInstance} from "class-transformer";
+import {plainToClass, plainToClassFromExist, plainToInstance} from "class-transformer";
 
 export class CustomResponse {
 
@@ -8,14 +8,13 @@ export class CustomResponse {
     private _statusCode: HttpStatusCode;
     private _data: any = {};
 
-    constructor(expressResponse: ExpressResponse) {
-        this._expressResponse = expressResponse
+    constructor() {
+        this._expressResponse = response
     }
 
     get expressResponse(): ExpressResponse {
         return this._expressResponse;
     }
-
 
     get data(): any {
         return this._data
@@ -35,19 +34,13 @@ export class CustomResponse {
     }
 
     public static fromDto<T>(dtoInstance: T): any {
-        let res = new CustomResponse(response)
-        res.data = plainToInstance(
+        let res = new CustomResponse()
+        res.data = plainToClassFromExist(
             Object.getPrototypeOf(dtoInstance).constructor,
             dtoInstance,
             {excludeExtraneousValues: true}
         );
 
-        return res;
-    }
-
-    public static response(...data: any) {
-        let res = new CustomResponse(response)
-        res.data = data;
         return res;
     }
 }

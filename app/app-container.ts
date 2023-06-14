@@ -1,7 +1,7 @@
 import {Container, interfaces} from "inversify";
 import {HomeController} from "./http/Controllers/HomeController";
 import express, {Express, NextFunction, Request, Response} from "express";
-import {Controller} from "./http/Controllers/Controller";
+import {BaseController} from "./http/Controllers/BaseController";
 import {CarController} from "./http/Controllers/CarController";
 import {ILogger} from "./utils/Logging/ILogger";
 import {Logger} from "./utils/Logging/Logger";
@@ -16,9 +16,9 @@ export class AppContainer {
         this._container = new Container();
     }
 
-    controllers: Controller[] = [
+    controllers: BaseController[] = [
         new HomeController(),
-        new CarController(),
+       // new CarController(),
     ]
 
     public setupBindings() {

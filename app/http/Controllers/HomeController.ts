@@ -1,27 +1,26 @@
-import {NextFunction, Request, Response as ExpressResponse} from "express";
-import {CustomResponse} from "../Responses/CustomResponse";
-import {injectable} from "inversify";
-
 import {CreateHomeRequest} from "../Requests/CreateHomeRequest";
-import {Handle} from "../Requests/Decorators/Handle";
-import {Controller} from "./Controller";
-import {Get, Post} from "../../router";
+import {BaseController} from "./BaseController";
+import {Controller, Get, Post} from "../Decorators/routes";
+import {HomeResponse} from "../Responses/HomeResponse";
 
-export class HomeController extends Controller {
+@Controller("Home", "Simple Home controller")
+export class HomeController extends BaseController {
+    // @Get("/api")
+    // public index(request: Request): CustomResponse {
+    //     return this.response("helo");
+    // }
 
-    constructor() {
-        super();
-    }
+    @Post(
+        "/api",
+        CreateHomeRequest,
+        "Simple Post Method"
+    )
+    public createApi(request: CreateHomeRequest): HomeResponse {
+        let response = new HomeResponse()
+        response.name = request.name;
+        response.address = request.address;
+        response.siblings = request.siblings;
 
-    @Get("/")
-    public index(request: Request): CustomResponse {
-
-        return this.response("helo");
-    }
-
-    @Post("/create/:id", CreateHomeRequest)
-    public create(id: number, request: CreateHomeRequest): CustomResponse {
-
-        return CustomResponse.response(request.name, id);
+        return response;
     }
 }

@@ -1,9 +1,10 @@
 import {CustomResponse} from "../Responses/CustomResponse";
 import {response} from "express";
+import {Request} from "../Requests/Request";
 
-export class Controller {
+export class BaseController {
     protected response(...data: any) {
-        let res = new CustomResponse(response)
+        let res = new CustomResponse()
         res.data = data;
         return res
     }

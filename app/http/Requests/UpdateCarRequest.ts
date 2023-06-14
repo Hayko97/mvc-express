@@ -1,4 +1,4 @@
-import {ArrayMinSize, ArrayNotEmpty, IsString, Length} from "class-validator";
+import {IsString, Length} from "class-validator";
 import {Request} from "./Request";
 
 export class UpdateCarRequest extends Request {

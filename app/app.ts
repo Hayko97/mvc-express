@@ -1,4 +1,4 @@
-import express, {Application, Express, NextFunction, Request, Response} from "express";
+import express, {Application, Express, NextFunction, Request, Response, Router} from "express";
 import bodyParser from "body-parser";
 import path from "path";
 import cors from "cors";
@@ -6,6 +6,9 @@ import cookieParser from "cookie-parser";
 import createHttpError, {HttpError} from "http-errors";
 import {HttpStatusCode} from "axios";
 import morgan from "morgan";
+import swaggerUi from "swagger-ui-express";
+import {DocumentBuilder} from "./http/ApiDocs/DocumentBuilder";
+import {RouteBuilder} from "./route-builder";
 
 let expressApp: Express;
 let builder: Builder;
@@ -47,6 +50,11 @@ class Builder {
         this.cors()
         this._app.use(cookieParser());
         this._app.use(express.static(path.join('../../', __dirname, 'public')));
+        DocumentBuilder.getInstance().build(this._app)
+        RouteBuilder.getInstance().build(this._app)
+
+        this.errorHandlers()
+
 
         return this._app;
     }

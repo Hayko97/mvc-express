@@ -4,7 +4,6 @@ import http from 'http';
 import ErrnoException = NodeJS.ErrnoException;
 
 dotenv.config();
-
 const port = normalizePort({val: process.env.PORT || '3000'});
 
 function normalizePort({val}: { val: string }) {
