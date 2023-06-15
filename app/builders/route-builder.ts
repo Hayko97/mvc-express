@@ -1,16 +1,10 @@
-import {App} from "./app";
 import express, {Request as ExpressRequest, Response as ExpressResponse, Express, NextFunction} from "express";
-import {HttpStatusCode} from "axios";
-import {CustomResponse} from "./http/Responses/CustomResponse";
-import {Request} from "./http/Requests/Request"
-import {DocumentBuilder} from "./http/ApiDocs/DocumentBuilder";
 import * as core from "express-serve-static-core";
 import {string} from "yargs";
 
 export class RouteBuilder {
     private static instance: RouteBuilder;
     private readonly _handlers: { path: string, router: core.Router, method: string }[] = [];
-
 
     public static getInstance(): RouteBuilder {
         if (!RouteBuilder.instance) {
@@ -20,7 +14,10 @@ export class RouteBuilder {
         return RouteBuilder.instance;
     }
 
-    public addRoute(path: string, router: core.Router, method: string) {
+    public addRoute(path: string, method: string, handler: any) {
+
+        let router: core.Router = express.Router();
+        router.get(path, handler)
 
         this._handlers.push({
             path: path,

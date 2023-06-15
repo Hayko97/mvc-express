@@ -1,9 +1,9 @@
 import "reflect-metadata"
 import type {Arguments, CommandBuilder} from 'yargs';
 import {Application} from "express";
-import {App} from "../app";
-import {AppContainer} from "../app-container";
-import {Server} from "../../server";
+import {App} from "../app/app";
+import {AppContainer} from "../app/app-container";
+import {Server} from "../server";
 
 // type Options = {
 //     name: string;

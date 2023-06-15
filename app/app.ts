@@ -8,7 +8,7 @@ import {HttpStatusCode} from "axios";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 import {DocumentBuilder} from "./http/ApiDocs/DocumentBuilder";
-import {RouteBuilder} from "./route-builder";
+import {RouteBuilder} from "./builders/route-builder";
 
 let expressApp: Express;
 let builder: Builder;
@@ -47,7 +47,7 @@ class Builder {
         this.logging()
         this.parsers();
         this.viewEngine();
-        this.cors()
+        this._app.use(cors());
         this._app.use(cookieParser());
         this._app.use(express.static(path.join('../../', __dirname, 'public')));
         DocumentBuilder.getInstance().build(this._app)
@@ -67,10 +67,6 @@ class Builder {
     public viewEngine() {
         this._app.set('views', path.join(__dirname, '../../app/views'));
         this._app.set('view engine', 'pug');
-    }
-
-    public cors() {
-        this._app.use(cors());
     }
 
     public logging() {

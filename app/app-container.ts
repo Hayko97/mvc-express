@@ -5,6 +5,8 @@ import {BaseController} from "./http/Controllers/BaseController";
 import {CarController} from "./http/Controllers/CarController";
 import {ILogger} from "./utils/Logging/ILogger";
 import {Logger} from "./utils/Logging/Logger";
+import {IDataSourceFactory} from "../database/IDataSourceFactory";
+import {DataSourceFactory} from "../database/DataSourceFactory";
 
 
 export class AppContainer {
@@ -18,10 +20,11 @@ export class AppContainer {
 
     controllers: BaseController[] = [
         new HomeController(),
-       // new CarController(),
+        new CarController(),
     ]
 
     public setupBindings() {
+        this._container.bind<IDataSourceFactory>("IDataSourceFactory").to(DataSourceFactory).inSingletonScope()
         this._container.bind<ILogger>("ILogger").to(Logger).inTransientScope()
     }
 

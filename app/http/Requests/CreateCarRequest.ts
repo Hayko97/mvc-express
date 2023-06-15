@@ -1,17 +1,16 @@
 import {IsString, Length} from "class-validator";
 import {Request} from "./Request";
-import {Init} from "../Decorators/properties";
+import {Property} from "../ApiDocs/Decorators/ApiRequest";
 
 export class CreateCarRequest extends Request {
 
     @IsString()
     @Length(1, 20)
-    @Init()
+    @Property()
     name: string;
 
     @IsString()
     @Length(5, 20)
-    @Init()
+    @Property()
     model: string;
-
 }

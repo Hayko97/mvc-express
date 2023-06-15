@@ -1,29 +1,8 @@
-import * as express from 'express';
 import {Express, request as expressRequest} from 'express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJSDoc from "swagger-jsdoc";
-import {CustomResponse} from "../Responses/CustomResponse";
-import {Request} from "../Requests/Request";
-import {string} from "yargs";
-import * as core from "express-serve-static-core";
-import {CreateHomeRequest} from "../Requests/CreateHomeRequest";
-
-export interface PathOption<ReQ extends typeof Request, ReS extends typeof CustomResponse> {
-    path: string;
-    method: string;
-    response?: new (...args: any) => InstanceType<ReS>
-    request?: new (...args: any) => InstanceType<ReQ>
-    params?: string[]
-    summary?: string
-}
-
-export interface RequestBody {
-    scheme: string;
-    content: Record<string, object>;
-    summary?: string;
-}
-
+import {PathOption, RequestBody, ResponseScheme} from "./interfaces";
 export class DocumentBuilder {
     private static instance: DocumentBuilder;
     private readonly swaggerOptions: swaggerJSDoc.Options;
@@ -82,9 +61,7 @@ export class DocumentBuilder {
         return this;
     }
 
-    public addPath<ReQ extends typeof Request, ReS extends typeof CustomResponse>(
-        path: PathOption<ReQ, ReS>
-    ) {
+    public addPath(path: PathOption) {
 
         let pathObj = this.swaggerOptions.swaggerDefinition!.paths[path.path] || {};
         let methodObj = pathObj[path.method] || {};
@@ -98,12 +75,10 @@ export class DocumentBuilder {
 
         if (path.params) {
             methodObj.parameters = path.params.map(param => ({
-                in: 'query',
-                name: param,
-                schema: {
-                    type: 'string',
-                },
-                description: param,
+                in: param.in,
+                name: param.name,
+                schema: param.schema,
+                description: param.description,
             }));
         }
 
@@ -121,50 +96,46 @@ export class DocumentBuilder {
         return this;
     }
 
-    private addResponse<ReS extends typeof CustomResponse>(
-        response: new (...args: any) => InstanceType<ReS>,
+    private addResponse(
+        response: ResponseScheme,
         methodObj: any
     ) {
-        const responseDtoName = response.name;
-
         methodObj.responses = {
-            "200": {
+            [response.statusCode]: {
                 content: {
                     'application/json': {
                         schema: {
-                            $ref: `#/components/schemas/${responseDtoName}`,
+                            $ref: `#/components/schemas/${response.scheme}`,
                         },
                     },
                 }
             }
         };
 
-        this.swaggerOptions.swaggerDefinition!.components.schemas[responseDtoName] = {
+        this.swaggerOptions.swaggerDefinition!.components.schemas[response.scheme] = {
             type: 'object',
-            properties: responseProperties(response)
+            properties: response.properties
         };
-
     }
 
-    private addRequest<ReS extends typeof Request>(
-        request: new (...args: any) => InstanceType<ReS>,
+    private addRequest(
+        requestScheme: RequestBody,
         methodObj: any
     ) {
-        const requestDtoName = request.name;
-
         methodObj.requestBody = {
+            required: requestScheme.required ?? false,
             content: {
                 'application/json': {
                     schema: {
-                        $ref: `#/components/schemas/${requestDtoName}`,
+                        $ref: `#/components/schemas/${requestScheme.scheme}`,
                     },
                 },
             }
         };
 
-        this.swaggerOptions.swaggerDefinition!.components.schemas[requestDtoName] = {
+        this.swaggerOptions.swaggerDefinition!.components.schemas[requestScheme.scheme] = {
             type: 'object',
-            properties: requestProperties(request)
+            properties: requestScheme.properties
         };
 
         return methodObj;
@@ -176,49 +147,4 @@ export class DocumentBuilder {
         const swaggerSpec = swaggerJsdoc(this.swaggerOptions);
         app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     }
-}
-
-function requestProperties(requestClass: any) {
-
-    const propertiesWithTypes: Record<string, object> = {};
-    Object.getOwnPropertyNames(requestClass.prototype)
-        .filter(value => value != 'constructor')
-        .forEach(value => {
-            const propertyType = Reflect.getMetadata('design:type', requestClass.prototype, value);
-            if (propertyType.name === "Array") {
-                propertiesWithTypes[value] = {
-                    type: 'array',
-                    items: {type: propertyType.name.toLowerCase()}
-                }
-            } else {
-                propertiesWithTypes[value] = {type: propertyType.name.toLowerCase()};
-            }
-        });
-
-    return propertiesWithTypes;
-}
-
-function responseProperties(responseClass: any) {
-
-    const propertiesWithTypes: Record<string, object> = {};
-
-    Object.getOwnPropertyNames(responseClass.prototype)
-        .filter(value => value != 'constructor')
-        .forEach(value => {
-            const propertyType = Reflect.getMetadata('design:type', responseClass.prototype, value);
-
-            if (propertyType) {
-                if (propertyType.name === "Array") {
-                    propertiesWithTypes[value] = {
-                        type: 'array',
-                        items: {type: propertyType.name.toLowerCase()}
-                    }
-                } else {
-                    propertiesWithTypes[value] = {type: propertyType.name.toLowerCase()};
-                }
-            }
-        });
-
-
-    return propertiesWithTypes;
 }

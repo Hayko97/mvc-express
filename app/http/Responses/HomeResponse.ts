@@ -1,16 +1,16 @@
 import {CustomResponse} from "./CustomResponse";
-import {Init} from "../Decorators/properties";
-import {classToPlain} from "class-transformer";
+import {ApiResponse, Property} from "../ApiDocs/Decorators/ApiResponse";
 
+@ApiResponse()
 export class HomeResponse extends CustomResponse {
 
-    @Init()
+    @Property()
     address: string;
 
-    @Init()
+    @Property()
     name: string;
 
-    @Init()
+    @Property()
     siblings: string[];
 
     //Override is required for returning this data from controller

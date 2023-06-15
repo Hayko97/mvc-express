@@ -1,21 +1,23 @@
-import {Request} from "../Requests/Request";
+import {Request} from "../http/Requests/Request";
 import {string} from "yargs";
-import {DocumentBuilder} from "../ApiDocs/DocumentBuilder";
+import {DocumentBuilder} from "../http/ApiDocs/DocumentBuilder";
 import * as core from "express-serve-static-core";
 import express, {NextFunction, request, Request as ExpressRequest, Response as ExpressResponse} from "express";
 import {HttpStatusCode} from "axios";
-import {CustomResponse} from "../Responses/CustomResponse";
-import {RouteBuilder} from "../../route-builder";
+import {CustomResponse} from "../http/Responses/CustomResponse";
+import {RouteBuilder} from "./route-builder";
+import {clearRequestScheme, parameter, requestBody} from "../http/ApiDocs/Decorators/ApiRequest";
+import {clearResponseScheme, responseScheme} from "../http/ApiDocs/Decorators/ApiResponse";
+import {convertExpressPathToSwagger, convertParamsToSwaggerParams} from "../http/ApiDocs/helpers";
 
-var routes: { path: string, method: string }[] = [];
+var routeDecorators: { path: string, method: string }[] = [];
 
 export function Controller(name: string, desc?: string) {
     return function (target: Function) {
-        console.log("controller")
         let builder = DocumentBuilder.getInstance()
             .addTag(name, desc ?? 'default')
 
-        routes.forEach(value => {
+        routeDecorators.forEach(value => {
             builder.attachTagToRoute(name, value.path, value.method)
         })
     }
@@ -26,7 +28,7 @@ export function Get<T extends typeof Request>(
     requestClass?: new (arg: any) => InstanceType<T>,
     summary?: string
 ) {
-    routes.push({
+    routeDecorators.push({
         path: path,
         method: DocumentBuilder.httpMethod.get
     })
@@ -37,9 +39,8 @@ export function Get<T extends typeof Request>(
         descriptor.value = getRouteHandler(target, path, descriptor, requestClass)
         descriptor.value = descriptor.value.bind(target)
 
-        let router: core.Router = express.Router();
-        router.get(path, descriptor.value)
-        RouteBuilder.getInstance().addRoute(path, router, DocumentBuilder.httpMethod.get);
+
+        RouteBuilder.getInstance().addRoute(path, DocumentBuilder.httpMethod.get, descriptor.value);
 
         return descriptor;
     };
@@ -50,7 +51,7 @@ export function Post<ReQ extends typeof Request, ReS extends typeof Request>(
     requestClass?: new (arg: any) => InstanceType<ReQ>,
     summary?: string
 ) {
-    routes.push({
+    routeDecorators.push({
         path: path,
         method: DocumentBuilder.httpMethod.post
     })
@@ -61,9 +62,7 @@ export function Post<ReQ extends typeof Request, ReS extends typeof Request>(
         descriptor.value = getRouteHandler(target, path, descriptor, requestClass)
         descriptor.value = descriptor.value.bind(target)
 
-        let router = express.Router();
-        router.post(path, descriptor.value)
-        RouteBuilder.getInstance().addRoute(path, router, DocumentBuilder.httpMethod.post);
+        RouteBuilder.getInstance().addRoute(path, DocumentBuilder.httpMethod.post, descriptor.value);
 
     };
 }
@@ -73,7 +72,7 @@ export function Put<T extends typeof Request>(
     requestClass?: new (arg: any) => InstanceType<T>,
     summary?: string
 ) {
-    routes.push({
+    routeDecorators.push({
         path: path,
         method: DocumentBuilder.httpMethod.put
     })
@@ -84,9 +83,7 @@ export function Put<T extends typeof Request>(
         descriptor.value = getRouteHandler(target, path, descriptor, requestClass)
         descriptor.value = descriptor.value.bind(target)
 
-        let router = express.Router();
-        router.put(path, descriptor.value)
-        RouteBuilder.getInstance().addRoute(path, router, DocumentBuilder.httpMethod.put);
+        RouteBuilder.getInstance().addRoute(path, DocumentBuilder.httpMethod.put, descriptor.value);
     };
 }
 
@@ -95,7 +92,7 @@ export function Delete<T extends typeof Request>(
     requestClass?: new (arg: any) => InstanceType<T>,
     summary?: string
 ) {
-    routes.push({
+    routeDecorators.push({
         path: path,
         method: DocumentBuilder.httpMethod.delete
     })
@@ -106,9 +103,7 @@ export function Delete<T extends typeof Request>(
         descriptor.value = getRouteHandler(target, path, descriptor, requestClass)
         descriptor.value = descriptor.value.bind(target)
 
-        let router = express.Router();
-        router.delete(path, descriptor.value)
-        RouteBuilder.getInstance().addRoute(path, router, DocumentBuilder.httpMethod.delete);
+        RouteBuilder.getInstance().addRoute(path, DocumentBuilder.httpMethod.delete, descriptor.value);
     };
 }
 
@@ -117,7 +112,7 @@ export function Patch<T extends typeof Request>(
     requestClass?: new (arg: any) => InstanceType<T>,
     summary?: string
 ) {
-    routes.push({
+    routeDecorators.push({
         path: path,
         method: DocumentBuilder.httpMethod.patch
     })
@@ -128,9 +123,7 @@ export function Patch<T extends typeof Request>(
         descriptor.value = getRouteHandler(target, path, descriptor, requestClass)
         descriptor.value = descriptor.value.bind(target)
 
-        let router = express.Router();
-        router.patch(path, descriptor.value)
-        RouteBuilder.getInstance().addRoute(path, router, DocumentBuilder.httpMethod.patch);
+        RouteBuilder.getInstance().addRoute(path, DocumentBuilder.httpMethod.patch, descriptor.value);
     };
 }
 
@@ -140,23 +133,27 @@ function addToDocs<T extends typeof Request>(
     method: string,
     path: string,
     requestClass?: new (arg: any) => InstanceType<T>,
-    summary?: string
+    summary?: string,
 ) {
-    let parameterTypes = Reflect.getMetadata('design:paramtypes', target, key);
-    parameterTypes = parameterTypes.filter((type: any) => type !== requestClass);
 
-    const responseType = Reflect.getMetadata('design:returntype', target, key);
-    const responseClass = responseType.prototype.constructor;
-    console.log(responseClass)
+    if (!parameter) {
+
+    }
+
+    let parameterTypes = Reflect.getMetadata('design:paramtypes', target, key);
+    const paramNames: string[] = extractRouteParams(path);
 
     DocumentBuilder.getInstance().addPath({
-        path: path,
+        path: convertExpressPathToSwagger(path),
         method: method,
-        response: responseClass,
-        request: requestClass,
-        params: parameterTypes,
+        response: responseScheme,
+        request: requestBody,
+        params: convertParamsToSwaggerParams(paramNames, parameterTypes),
         summary: summary,
     });
+
+    clearRequestScheme();
+    clearResponseScheme();
 }
 
 function getRouteHandler<T extends typeof Request>(
@@ -172,6 +169,7 @@ function getRouteHandler<T extends typeof Request>(
 
         let paramArgs: any[] = [];
         paramNames.forEach((paramName: string, index: number) => {
+            console.log(req.params)
             paramArgs.push(req.params[paramName])
         });
 
