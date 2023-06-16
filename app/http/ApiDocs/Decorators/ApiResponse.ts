@@ -1,4 +1,4 @@
-import {ResponseScheme} from "../DocumentBuilder";
+import {ResponseScheme} from "../interfaces";
 import {HttpStatusCode} from "axios";
 import {convertPropertyToSwagger} from "../helpers";
 

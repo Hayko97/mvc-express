@@ -13,10 +13,4 @@ export class Car {
 
     @Column()
     filename: string
-
-    @Column()
-    views: number
-
-    @Column()
-    isPublished: boolean
 }

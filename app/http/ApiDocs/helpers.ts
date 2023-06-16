@@ -1,4 +1,4 @@
-import {Parameter} from "./DocumentBuilder";
+import {Parameter} from "./interfaces";
 import {string} from "yargs";
 
 export function convertPropertyToSwagger(propertyName: string, propertyType: any): any {

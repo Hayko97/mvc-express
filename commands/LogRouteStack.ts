@@ -13,12 +13,12 @@ import {Server} from "../server";
 export const command: string = 'log:routes';
 export const desc: string = 'Logging all route stack';
 
-export const builder: CommandBuilder = (yargs) =>
-    yargs
-        .options({
-            upper: {type: 'boolean'},
-        })
-        .positional('name', {type: 'string', demandOption: true});
+// export const builder: CommandBuilder = (yargs) =>
+//     yargs
+//         .options({
+//             upper: {type: 'boolean'},
+//         })
+//         .positional('name', {type: 'string', demandOption: true});
 
 export const handler = (): void => {
     let app = App.getInstance();
