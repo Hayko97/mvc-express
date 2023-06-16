@@ -1,24 +1,12 @@
 import "reflect-metadata"
 import type {Arguments, CommandBuilder} from 'yargs';
 import {Application} from "express";
-import {App} from "../app/app";
-import {AppContainer} from "../app/app-container";
-import {Server} from "../server";
-
-// type Options = {
-//     name: string;
-//     upper: boolean | undefined;
-// };
+import {App} from "../../app/app";
+import {AppContainer} from "../../app/app-container";
+import {Server} from "../../server";
 
 export const command: string = 'log:routes';
 export const desc: string = 'Logging all route stack';
-
-// export const builder: CommandBuilder = (yargs) =>
-//     yargs
-//         .options({
-//             upper: {type: 'boolean'},
-//         })
-//         .positional('name', {type: 'string', demandOption: true});
 
 export const handler = (): void => {
     let app = App.getInstance();
