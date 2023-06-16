@@ -8,7 +8,6 @@ import {Logger} from "./utils/Logging/Logger";
 import {IDataSourceFactory} from "../database/IDataSourceFactory";
 import {DataSourceFactory} from "../database/DataSourceFactory";
 
-
 export class AppContainer {
 
     private readonly _container: Container;

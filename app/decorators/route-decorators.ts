@@ -5,7 +5,7 @@ import * as core from "express-serve-static-core";
 import express, {NextFunction, request, Request as ExpressRequest, Response as ExpressResponse} from "express";
 import {HttpStatusCode} from "axios";
 import {CustomResponse} from "../http/Responses/CustomResponse";
-import {RouteBuilder} from "./route-builder";
+import {RouteBuilder} from "../builders/route-builder";
 import {clearRequestScheme, parameter, requestBody} from "../http/ApiDocs/Decorators/ApiRequest";
 import {clearResponseScheme, responseScheme} from "../http/ApiDocs/Decorators/ApiResponse";
 import {convertExpressPathToSwagger, convertParamsToSwaggerParams} from "../http/ApiDocs/helpers";

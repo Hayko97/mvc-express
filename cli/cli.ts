@@ -5,7 +5,7 @@ import {hideBin} from 'yargs/helpers';
 import * as path from "path";
 
 yargs(hideBin(process.argv))
-    .commandDir(path.join(__dirname, './commands'), {recurse: true})
+    .commandDir(path.join(__dirname, './cli'), {recurse: true})
     .strict()
     .alias({h: 'help'})
     .argv;

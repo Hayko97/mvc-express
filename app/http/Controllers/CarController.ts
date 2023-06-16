@@ -1,6 +1,6 @@
 import {Request, Response} from "express";
 import {BaseController} from "./BaseController";
-import {Get, Post, Put} from "../../builders/route-decorators";
+import {Get, Post, Put} from "../../decorators/route-decorators";
 import {CreateCarRequest} from "../Requests/CreateCarRequest";
 import {UpdateCarRequest} from "../Requests/UpdateCarRequest";
 import {CustomResponse} from "../Responses/CustomResponse";

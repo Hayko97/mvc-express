@@ -1,6 +1,6 @@
 import {CreateHomeRequest} from "../Requests/CreateHomeRequest";
 import {BaseController} from "./BaseController";
-import {Controller, Get, Post} from "../../builders/route-decorators";
+import {Controller, Get, Post} from "../../decorators/route-decorators";
 import {HomeResponse} from "../Responses/HomeResponse";
 import {CustomResponse} from "../Responses/CustomResponse";
 
